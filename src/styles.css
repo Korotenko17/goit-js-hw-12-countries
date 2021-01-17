@@ -1,0 +1,48 @@
+.greeting {
+  text-align: center;
+}
+
+input {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+
+  border-width: thick;
+  border-radius: 10px;
+
+  min-width: 400px;
+  min-height: 40px;
+  font-size: 30px;
+}
+
+.card {
+  text-align: center;
+  /* display: flex; */
+}
+
+.country-name {
+  /* text-align: center; */
+  margin: 0;
+
+  font-size: 35px;
+}
+
+.countrie-attributes {
+  display: inline-block;
+  margin-right: 40px;
+
+  text-align: left;
+}
+
+.flag {
+  display: inline-block;
+}
+
+img {
+  max-width: 250px;
+}
+
+.countries {
+  font-size: 20px;
+  text-align: center;
+}

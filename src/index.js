@@ -1,60 +1,59 @@
-import './css/styles.css';
-import debounce from 'lodash.debounce';
-import countryFetch from './js/fetchCountries';
-import countryCard from './template/landCard.hbs';
-import countryList from './template/landList.hbs';
-import './js/pnotify-cfg';
+import './styles.css';
+
+import countrieCardTemplate from './templates/countrie-card.hbs';
+import fetchCountries from './js/fetchCountries.js';
 import { error } from '@pnotify/core';
+import '@pnotify/core/dist/PNotify.css';
+import '@pnotify/core/dist/BrightTheme.css';
 
 const refs = {
-  cardContainer: document.querySelector('.js-cardLand'),
-  searchForm: document.querySelector('.js-searchForm'),
+  search: document.querySelector('input'),
+  countries: document.querySelector('.countries'),
 };
 
-const renderCountryList = lands => {
-  const markup = countryList(lands);
-  refs.cardContainer.insertAdjacentHTML('beforeend', markup);
-};
+let inputValue = '';
+var debounce = require('lodash.debounce');
 
-const renderCountryCard = land => {
-  const markup = countryCard(land);
-  refs.cardContainer.insertAdjacentHTML('beforeend', markup);
-};
+refs.search.addEventListener('input', debounce(onSearch, 500));
 
-refs.searchForm.addEventListener('input', debounce(landSearch, 500));
 
-function landSearch(event) {
-  event.preventDefault();
+function onSearch() {
+  inputValue = refs.search.value;
   clearMarkup();
-
-  const searchQuery = refs.searchForm.elements.query.value;
-
-  countryFetch
-    .fetchCountries(searchQuery)
-    .then(landSucces)
-    .catch(landError)
-    .finally(clearMarkup());
-}
-
-function landSucces(data) {
-  if (data.length === 1) {
-    renderCountryCard(data);
-    return;
+  if (refs.search.value === '') { return }
+  else {
+    fetchCountries(inputValue).then(promise => {
+      if (promise.status && promise.status !== 200) {
+        error({
+          title: 'Ошибка',
+          text: 'Неподходящее название, попробуйте снова',
+          icon: true,
+          delay: 2000,
+        });
+      } else if (promise.length > 10) {
+        error({
+          title: 'Ошибка',
+          text: 'Нужно ввести более специфичный запрос, слишком много стран',
+          icon: true,
+          delay: 2000,
+        });
+      } else if (promise.length === 1) {
+        renderCountrieCard(promise[0])
+      } else { renderCountriesList(promise) }
+    }).catch(error => console.log(error))
   }
-  if (data.length >= 2 && data.length <= 10) {
-    renderCountryList(data);
-    return;
-  }
-  landError();
-  clearMarkup();
-  return;
-}
+};
 
-function landError() {
-  error({
-    text: 'Too many matches found. Please enter a more specific query!',
-  });
-}
-function clearMarkup() {
-  refs.cardContainer.innerHTML = '';
-}
+function renderCountrieCard(countrie) {
+  const countrieCardMarkup = countrieCardTemplate(countrie);
+  refs.countries.insertAdjacentHTML('beforeend', countrieCardMarkup)
+};
+
+function renderCountriesList(countries) { 
+  const countriesNames = countries.map( (сountrie) => `<li class="countrie-item">${сountrie.name}</li>`).join('');
+  refs.countries.insertAdjacentHTML('beforeend', countriesNames);
+};
+
+function clearMarkup() { 
+  refs.countries.innerHTML = '';
+  };
